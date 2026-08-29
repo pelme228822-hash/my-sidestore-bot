@@ -23,7 +23,7 @@ def get_sideinstaller_release():
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
     
     try:
-        res = requests.get(url, headers=headers, timeout=5)
+        res = requests.get(url, headers=headers, timeout=10)
         if res.status_code == 200:
             releases = res.json()
             if releases:
@@ -36,7 +36,9 @@ def get_sideinstaller_release():
     except Exception as e:
         print(f"Ошибка GitHub API: {e}")
 
-    return None, None, None
+    # Резервный фолбэк: если GitHub API недоступен или выдал лимит запросов
+    fallback_url = f"https://github.com/{REPO_OWNER}/{REPO_NAME}/releases/latest/download/SideInstaller.ipa"
+    return fallback_url, "SideInstaller.ipa", "Latest"
 
 # Главное меню
 def main_menu():
@@ -57,7 +59,7 @@ async def start_cmd(message: types.Message):
         parse_mode="HTML"
     )
 
-# Раздел "Что это такое" (Свернутая цитата)
+# Раздел "Что это такое" (Единая свернутая цитата)
 @dp.callback_query(F.data == "info")
 async def info_callback(call: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
@@ -118,30 +120,40 @@ async def step2_callback(call: types.CallbackQuery):
 # Отправка файла прямо в чат
 @dp.callback_query(F.data == "download_ipa")
 async def download_callback(call: types.CallbackQuery):
-    await call.answer("Загружаю файл с GitHub, подожди пару секунд...")
+    await call.answer("Загружаю файл...")
     
     download_url, file_name, version = get_sideinstaller_release()
-    
-    if not download_url:
-        await call.message.answer("❌ Не удалось получить файл с GitHub. Попробуй позже.")
-        return
 
     builder = InlineKeyboardBuilder()
     builder.button(text="🚀 Перейти к инструкции по установке", callback_data="step_2")
     builder.button(text="🔙 Главное меню", callback_data="home")
     builder.adjust(1)
 
-    await call.message.answer(f"⏳ Отправляю <b>{file_name}</b> ({version}) в чат...")
+    status_msg = await call.message.answer(f"⏳ Отправляю <b>{file_name}</b> ({version}) в чат...")
     
-    ipa_file = URLInputFile(download_url, filename=file_name)
-    
-    await bot.send_document(
-        chat_id=call.message.chat.id,
-        document=ipa_file,
-        caption=f"✅ <b>Файл {file_name} готов!</b>\n\nТеперь переходи к Шагу 2 для подписи и установки.",
-        reply_markup=builder.as_markup(),
-        parse_mode="HTML"
-    )
+    try:
+        ipa_file = URLInputFile(download_url, filename=file_name)
+        await bot.send_document(
+            chat_id=call.message.chat.id,
+            document=ipa_file,
+            caption=f"✅ <b>Файл {file_name} готов!</b>\n\nТеперь переходи к Шагу 2 для подписи и установки.",
+            reply_markup=builder.as_markup(),
+            parse_mode="HTML"
+        )
+    except Exception as e:
+        print(f"Ошибка отправки файла в Telegram: {e}")
+        # Запасной вариант, если Telegram блокирует скачивание напрямую из GitHub
+        fallback_builder = InlineKeyboardBuilder()
+        fallback_builder.button(text=f"📥 Скачать {file_name}", url=download_url)
+        fallback_builder.button(text="🚀 Перейти к инструкции", callback_data="step_2")
+        fallback_builder.button(text="🔙 Главное меню", callback_data="home")
+        fallback_builder.adjust(1)
+        
+        await status_msg.edit_text(
+            f"✅ <b>Файл {file_name} готов к скачиванию:</b>\n\nНажми кнопку ниже, чтобы загрузить файл на iPhone:",
+            reply_markup=fallback_builder.as_markup(),
+            parse_mode="HTML"
+        )
 
 # Возврат в главное меню
 @dp.callback_query(F.data == "home")
@@ -152,13 +164,12 @@ async def home_callback(call: types.CallbackQuery):
         parse_mode="HTML"
     )
 
-# Фейковый сервер для заглушки порта Render
+# Фейковый сервер для порта Render
 async def handle_ping(request):
     return web.Response(text="Bot is running")
 
 # Точка входа
 async def main():
-    # Запуск заглушки порта для Render Web Service
     app = web.Application()
     app.router.add_get("/", handle_ping)
     runner = web.AppRunner(app)
@@ -167,7 +178,6 @@ async def main():
     site = web.TCPSite(runner, "0.0.0.0", port)
     await site.start()
 
-    # Запуск Telegram бота
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
