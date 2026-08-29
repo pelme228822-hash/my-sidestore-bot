@@ -53,8 +53,8 @@ def main_menu():
 @dp.message(Command("start"))
 async def start_cmd(message: types.Message):
     await message.answer(
-        "👋 <b>Привет! Это гайд по установке сторонних приложений на iOS без ПК.</b>\n\n"
-        "Здесь ты сможешь получить файл SideInstaller и установить его прямо с телефона.",
+        "👋 <b>Привет! Это гайд по установке SideStore на iOS без ПК.</b>\n\n"
+        "Здесь ты сможешь получить файл SideInstaller и с его помощью установить SideStore прямо с телефона.",
         reply_markup=main_menu(),
         parse_mode="HTML"
     )
@@ -69,8 +69,8 @@ async def info_callback(call: types.CallbackQuery):
     
     text = (
         "❓ <b>Что такое SideInstaller?</b>\n\n"
-        "Это удобный менеджер и инсталлятор сторонних .ipa приложений прямо на твоем iPhone, "
-        "работающий без подключения к компьютеру.\n\n"
+        "<b>SideInstaller</b> — это специальное утилитарное приложение, созданное для установки самого альтернативного магазина <b>SideStore</b> прямо на iPhone без участия компьютера!\n\n"
+        "Сам по себе SideInstaller служит «трамплином»: ты подписываешь его через бесплатный веб-сервис, а уже внутри него разворачивается и запускается сам SideStore, который в дальнейшем позволит устанавливать любые .ipa файлы и игры без ПК.\n\n"
         "<blockquote expandable>🇪🇺 <b>Официальный контекст и регуляция ЕС:</b>\n\n"
         "Под давлением Закона о цифровых рынках (DMA) Европейского союза, компания Apple была "
         "официально обязана предоставить пользователям возможность установки приложений из альтернативных "
@@ -97,23 +97,24 @@ async def step1_callback(call: types.CallbackQuery):
     )
     await call.message.edit_text(text, reply_markup=builder.as_markup(), parse_mode="HTML")
 
-# Шаг 2 Инструкции
+# Шаг 2 Инструкции (Обновлена ссылка и алгоритм подписи)
 @dp.callback_query(F.data == "step_2")
 async def step2_callback(call: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
-    builder.button(text="🌐 Открыть сайт подписи (SwagInstall)", url="https://swaginstall.com/")
+    builder.button(text="🌐 Открыть сайт подписи (SignTools)", url="https://signtools.app/")
     builder.button(text="📥 Запросить IPA файл", callback_data="download_ipa")
     builder.button(text="🔙 Назад к Шагу 1", callback_data="step_1")
     builder.adjust(1)
 
     text = (
         "📍 <b>Шаг 2: Бесплатная подпись и установка без ПК</b>\n\n"
-        "Так как iOS не дает ставить .ipa напрямую, файл нужно подписать бесплатным публичным сертификатом:\n\n"
-        "1. Перейди на сервис онлайн-подписи по кнопке ниже (<b>SwagInstall</b>).\n"
-        "2. Нажми <b>«Выбрать IPA»</b> и загрузи скачанный из этого бота файл <code>SideInstaller.ipa</code>.\n"
-        "3. Нажми <b>«Подписать»</b> (Sign).\n"
-        "4. Нажми <b>«Установить»</b> и подтверди загрузку на экран Домой.\n"
-        "5. Если пишет «Ненадежный разработчик»: зайди в <i>Настройки -> Основные -> VPN и управление устройством</i> и нажми <b>«Доверять»</b>."
+        "Так как iOS не дает ставить .ipa напрямую, SideInstaller нужно подписать бесплатным сертификатом:\n\n"
+        "1. Перейди на сайт подписи по кнопке ниже (<b>SignTools</b>).\n"
+        "2. Загрузи скачанный файл <code>SideInstaller.ipa</code> из приложения «Файлы».\n"
+        "3. Нажми кнопку <b>«Sign»</b> (Подписать) и дождись завершения обработки.\n"
+        "4. Нажми <b>«Install»</b> (Установить) и подтверди всплывающее окно на экране Домой.\n"
+        "5. Если при запуске пишет «Ненадежный корпоративный разработчик»: зайди в <i>Настройки -> Основные -> VPN и управление устройством</i>, найди сертификат и нажми <b>«Доверять»</b>.\n"
+        "6. Запусти <b>SideInstaller</b> и установи через него сам <b>SideStore</b>!"
     )
     await call.message.edit_text(text, reply_markup=builder.as_markup(), parse_mode="HTML")
 
@@ -129,7 +130,10 @@ async def download_callback(call: types.CallbackQuery):
     builder.button(text="🔙 Главное меню", callback_data="home")
     builder.adjust(1)
 
-    status_msg = await call.message.answer(f"⏳ Отправляю <b>{file_name}</b> ({version}) в чат...")
+    status_msg = await call.message.answer(
+        f"⏳ Отправляю <b>{file_name}</b> ({version}) в чат...",
+        parse_mode="HTML"
+    )
     
     try:
         ipa_file = URLInputFile(download_url, filename=file_name)
@@ -142,7 +146,6 @@ async def download_callback(call: types.CallbackQuery):
         )
     except Exception as e:
         print(f"Ошибка отправки файла в Telegram: {e}")
-        # Запасной вариант, если Telegram блокирует скачивание напрямую из GitHub
         fallback_builder = InlineKeyboardBuilder()
         fallback_builder.button(text=f"📥 Скачать {file_name}", url=download_url)
         fallback_builder.button(text="🚀 Перейти к инструкции", callback_data="step_2")
