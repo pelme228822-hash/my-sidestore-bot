@@ -97,11 +97,11 @@ async def step1_callback(call: types.CallbackQuery):
     )
     await call.message.edit_text(text, reply_markup=builder.as_markup(), parse_mode="HTML")
 
-# Шаг 2 Инструкции (Обновлена ссылка и алгоритм подписи)
+# Шаг 2 Инструкции (Обновлена ссылка на AppleJR)
 @dp.callback_query(F.data == "step_2")
 async def step2_callback(call: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
-    builder.button(text="🌐 Открыть сайт подписи (SignTools)", url="https://signtools.app/")
+    builder.button(text="🌐 Открыть сайт подписи (AppleJR)", url="https://applejr.net/")
     builder.button(text="📥 Запросить IPA файл", callback_data="download_ipa")
     builder.button(text="🔙 Назад к Шагу 1", callback_data="step_1")
     builder.adjust(1)
@@ -109,10 +109,10 @@ async def step2_callback(call: types.CallbackQuery):
     text = (
         "📍 <b>Шаг 2: Бесплатная подпись и установка без ПК</b>\n\n"
         "Так как iOS не дает ставить .ipa напрямую, SideInstaller нужно подписать бесплатным сертификатом:\n\n"
-        "1. Перейди на сайт подписи по кнопке ниже (<b>SignTools</b>).\n"
+        "1. Перейди на сайт подписи по кнопке ниже (<b>AppleJR</b>).\n"
         "2. Загрузи скачанный файл <code>SideInstaller.ipa</code> из приложения «Файлы».\n"
-        "3. Нажми кнопку <b>«Sign»</b> (Подписать) и дождись завершения обработки.\n"
-        "4. Нажми <b>«Install»</b> (Установить) и подтверди всплывающее окно на экране Домой.\n"
+        "3. Нажми кнопку для подписи и дождитесь завершения процесса.\n"
+        "4. Нажми <b>«Установить»</b> (Install) и подтверди запрос на рабочем столе.\n"
         "5. Если при запуске пишет «Ненадежный корпоративный разработчик»: зайди в <i>Настройки -> Основные -> VPN и управление устройством</i>, найди сертификат и нажми <b>«Доверять»</b>.\n"
         "6. Запусти <b>SideInstaller</b> и установи через него сам <b>SideStore</b>!"
     )
