@@ -50,13 +50,13 @@ def main_menu():
 @dp.message(Command("start"))
 async def start_cmd(message: types.Message):
     await message.answer(
-        "👋 **Привет! Это гайд по установке сторонних приложений на iOS без ПК.**\n\n"
+        "👋 <b>Привет! Это гайд по установке сторонних приложений на iOS без ПК.</b>\n\n"
         "Здесь ты сможешь получить файл SideInstaller и установить его прямо с телефона.",
         reply_markup=main_menu(),
-        parse_mode="Markdown"
+        parse_mode="HTML"
     )
 
-# Раздел "Что это такое"
+# Раздел "Что это такое" (Стилизованный под единую свернутую цитату)
 @dp.callback_query(F.data == "info")
 async def info_callback(call: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
@@ -65,17 +65,18 @@ async def info_callback(call: types.CallbackQuery):
     builder.adjust(1)
     
     text = (
-        "❓ **Что такое SideInstaller?**\n\n"
-        "Это удобный менеджер и инсталлятор сторонних `.ipa` приложений прямо на твоем iPhone, "
+        "❓ <b>Что такое SideInstaller?</b>\n\n"
+        "Это удобный менеджер и инсталлятор сторонних .ipa приложений прямо на твоем iPhone, "
         "работающий без подключения к компьютеру.\n\n"
-        "> 🇪🇺 **Официальный контекст и регуляция ЕС:**\n"
-        "> Под давлением Закона о цифровых рынках (DMA) Европейского союза, компания Apple была "
-        "> официально обязана предоставить пользователям возможность установки приложений из альтернативных "
-        "> источников вне App Store. Несмотря на ограничения Apple по регионам, сообщество разработчиков "
-        "> создало решения (включая веб-подпись и локальные профили), позволяющие обходить эти рамки "
-        "> и безопасно устанавливать любые `.ipa` файлы на любой iOS-девайс."
+        "<blockquote expandable>🇪🇺 <b>Официальный контекст и регуляция ЕС:</b>\n\n"
+        "Под давлением Закона о цифровых рынках (DMA) Европейского союза, компания Apple была "
+        "официально обязана предоставить пользователям возможность установки приложений из альтернативных "
+        "источников вне App Store.\n\n"
+        "Несмотря на ограничения Apple по регионам, сообщество разработчиков создало решения "
+        "(включая веб-подпись и локальные профили), позволяющие обходить эти рамки и безопасно "
+        "устанавливать любые .ipa файлы на любой iOS-девайс.</blockquote>"
     )
-    await call.message.edit_text(text, reply_markup=builder.as_markup(), parse_mode="Markdown")
+    await call.message.edit_text(text, reply_markup=builder.as_markup(), parse_mode="HTML")
 
 # Шаг 1 Инструкции
 @dp.callback_query(F.data == "step_1")
@@ -86,12 +87,12 @@ async def step1_callback(call: types.CallbackQuery):
     builder.adjust(1)
 
     text = (
-        "📍 **Шаг 1: Скачивание установочного файла**\n\n"
-        "1. Нажми кнопку ниже или в меню: **«Получить SideInstaller.ipa в чат»**.\n"
-        "2. Бот пришлет тебе готовый `.ipa` файл прямо в Telegram.\n"
-        "3. Сохрани этот файл себе в стандартное приложение **Файлы** на iPhone."
+        "📍 <b>Шаг 1: Скачивание установочного файла</b>\n\n"
+        "1. Нажми кнопку в меню: <b>«Получить SideInstaller.ipa в чат»</b>.\n"
+        "2. Бот пришлет тебе готовый .ipa файл прямо в Telegram.\n"
+        "3. Сохрани этот файл себе в приложение <b>Файлы</b> на iPhone."
     )
-    await call.message.edit_text(text, reply_markup=builder.as_markup(), parse_mode="Markdown")
+    await call.message.edit_text(text, reply_markup=builder.as_markup(), parse_mode="HTML")
 
 # Шаг 2 Инструкции
 @dp.callback_query(F.data == "step_2")
@@ -103,15 +104,15 @@ async def step2_callback(call: types.CallbackQuery):
     builder.adjust(1)
 
     text = (
-        "📍 **Шаг 2: Бесплатная подпись и установка без ПК**\n\n"
-        "Так как iOS не дает ставит `.ipa` напрямую, файл нужно подписать бесплатным публичным сертификатом:\n\n"
-        "1. Перейди на сервис онлайн-подписи (например, **SwagInstall** по кнопке ниже).\n"
-        "2. Нажми **«Выбрать IPA»** и загрузи скачанный из этого бота файл `SideInstaller.ipa`.\n"
-        "3. Нажми **«Подписать»** (Sign).\n"
-        "4. После завершения появится кнопка **«Установить»** — нажми её и подтверди установку на экран Домой.\n"
-        "5. Если при запуске пишет «Ненадежный разработчик»: зайди в *Настройки -> Основные -> VPN и управление устройством* и нажми **«Доверять»**."
+        "📍 <b>Шаг 2: Бесплатная подпись и установка без ПК</b>\n\n"
+        "Так как iOS не дает ставить .ipa напрямую, файл нужно подписать бесплатным публичным сертификатом:\n\n"
+        "1. Перейди на сервис онлайн-подписи по кнопке ниже (<b>SwagInstall</b>).\n"
+        "2. Нажми <b>«Выбрать IPA»</b> и загрузи скачанный из этого бота файл <code>SideInstaller.ipa</code>.\n"
+        "3. Нажми <b>«Подписать»</b> (Sign).\n"
+        "4. Нажми <b>«Установить»</b> и подтверди загрузку на экран Домой.\n"
+        "5. Если пишет «Ненадежный разработчик»: зайди в <i>Настройки -> Основные -> VPN и управление устройством</i> и нажми <b>«Доверять»</b>."
     )
-    await call.message.edit_text(text, reply_markup=builder.as_markup(), parse_mode="Markdown")
+    await call.message.edit_text(text, reply_markup=builder.as_markup(), parse_mode="HTML")
 
 # Отправка файла прямо в чат
 @dp.callback_query(F.data == "download_ipa")
@@ -129,27 +130,25 @@ async def download_callback(call: types.CallbackQuery):
     builder.button(text="🔙 Главное меню", callback_data="home")
     builder.adjust(1)
 
-    # Уведомляем пользователя
-    await call.message.answer(f"⏳ Отправляю **{file_name}** ({version}) в чат...")
+    await call.message.answer(f"⏳ Отправляю <b>{file_name}</b> ({version}) в чат...")
     
-    # Отправляем .ipa файл документом прямо в Telegram
     ipa_file = URLInputFile(download_url, filename=file_name)
     
     await bot.send_document(
         chat_id=call.message.chat.id,
         document=ipa_file,
-        caption=f"✅ **Файл {file_name} готов!**\n\nТеперь переходи к Шагу 2 для подписи и установки.",
+        caption=f"✅ <b>Файл {file_name} готов!</b>\n\nТеперь переходи к Шагу 2 для подписи и установки.",
         reply_markup=builder.as_markup(),
-        parse_mode="Markdown"
+        parse_mode="HTML"
     )
 
 # Возврат в главное меню
 @dp.callback_query(F.data == "home")
 async def home_callback(call: types.CallbackQuery):
     await call.message.edit_text(
-        "👋 **Главное меню гида по SideInstaller**",
+        "👋 <b>Главное меню гида по SideInstaller</b>",
         reply_markup=main_menu(),
-        parse_mode="Markdown"
+        parse_mode="HTML"
     )
 
 # Запуск
