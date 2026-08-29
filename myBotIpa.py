@@ -4,33 +4,43 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-TOKEN = "8607944139:AAE1dnqJf0TZrpmuS2sqlF2JZT_poNOB1U8"
+TOKEN = "ВСТАВЬ_СЮДА_СВОЙ_ТОКЕН"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# Функция авто-поиска свежего IPA SideStore
+# Функция авто-поиска свежего IPA SideStore (с поддержкой pre-releases и фолбэком)
 def get_sidestore_ipa():
-    url = "https://api.github.com/repos/SideStore/SideStore/releases/latest"
+    url = "https://api.github.com/repos/SideStore/SideStore/releases"
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+    
     try:
-        res = requests.get(url, headers={"User-Agent": "SideGuideBot"}).json()
-        for asset in res.get("assets", []):
-            if asset["name"].lower().endswith(".ipa"):
-                return asset["browser_download_url"], res.get("tag_name", "")
-    except Exception:
-        pass
-    return None, None
+        res = requests.get(url, headers=headers, timeout=5)
+        if res.status_code == 200:
+            releases = res.json()
+            if releases:
+                latest_release = releases[0]
+                tag = latest_release.get("tag_name", "v0.5.8")
+                
+                for asset in latest_release.get("assets", []):
+                    if asset["name"].lower().endswith(".ipa"):
+                        return asset["browser_download_url"], tag
+    except Exception as e:
+        print(f"Ошибка GitHub API: {e}")
 
-#Главное меню
+    # Запасная рабочая ссылка, если API GitHub недоступен или лимитирован
+    return "https://github.com/SideStore/SideStore/releases/download/0.5.8/SideStore-0.5.8.ipa", "v0.5.8"
+
+# Главное меню
 def main_menu():
     builder = InlineKeyboardBuilder()
     builder.button(text="📖 Что такое SideStore?", callback_data="info")
     builder.button(text="🚀 Инструкция (Без ПК)", callback_data="step_1")
     builder.button(text="📥 Скачать актуальный SideStore.ipa", callback_data="download_ipa")
-    builder.adjust(1) # Кнопки друг под другом
+    builder.adjust(1)
     return builder.as_markup()
 
-# Старт
+# Команда /start
 @dp.message(Command("start"))
 async def start_cmd(message: types.Message):
     await message.answer(
@@ -40,7 +50,7 @@ async def start_cmd(message: types.Message):
         parse_mode="Markdown"
     )
 
-# Колбэк: Информация
+# Информация
 @dp.callback_query(F.data == "info")
 async def info_callback(call: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
@@ -54,7 +64,7 @@ async def info_callback(call: types.CallbackQuery):
     )
     await call.message.edit_text(text, reply_markup=builder.as_markup(), parse_mode="Markdown")
 
-# Колбэк: Шаг 1 Инструкции
+# Шаг 1 Инструкции
 @dp.callback_query(F.data == "step_1")
 async def step1_callback(call: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
@@ -69,7 +79,7 @@ async def step1_callback(call: types.CallbackQuery):
     )
     await call.message.edit_text(text, reply_markup=builder.as_markup(), parse_mode="Markdown")
 
-# Колбэк: Шаг 2 Инструкции
+# Шаг 2 Инструкции
 @dp.callback_query(F.data == "step_2")
 async def step2_callback(call: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
@@ -86,7 +96,7 @@ async def step2_callback(call: types.CallbackQuery):
     )
     await call.message.edit_text(text, reply_markup=builder.as_markup(), parse_mode="Markdown")
 
-# Колбэк: Выдача файла
+# Выдача файла
 @dp.callback_query(F.data == "download_ipa")
 async def download_callback(call: types.CallbackQuery):
     await call.answer("Запрашиваю свежий релиз с GitHub...")
@@ -94,14 +104,14 @@ async def download_callback(call: types.CallbackQuery):
     
     builder = InlineKeyboardBuilder()
     if url:
-        builder.button(text=f"🔥 Скачать SideStore {ver}", url=url)
+        builder.button(text=f"🔥 Скачать SideStore ({ver})", url=url)
     builder.button(text="🔙 Главное меню", callback_data="home")
     builder.adjust(1)
 
-    msg = f"✅ **Свежий SideStore ({ver}) найден!**" if url else "❌ Не удалось получить ссылку."
+    msg = f"✅ **Свежий SideStore ({ver}) найден!**\n\nНажми на кнопку ниже для загрузки:"
     await call.message.edit_text(msg, reply_markup=builder.as_markup(), parse_mode="Markdown")
 
-# Возврат в меню
+# Возврат в главное меню
 @dp.callback_query(F.data == "home")
 async def home_callback(call: types.CallbackQuery):
     await call.message.edit_text(
@@ -110,6 +120,7 @@ async def home_callback(call: types.CallbackQuery):
         parse_mode="Markdown"
     )
 
+# Точка входа
 async def main():
     await dp.start_polling(bot)
 
