@@ -1,18 +1,19 @@
 import asyncio
 import os
 import requests
+from aiohttp import web
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import Command
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import URLInputFile
 
-# Берём токен из переменных окружения Render или вставляем напрямую
+# Токен из переменных окружения Render или напрямую
 TOKEN = os.getenv("TOKEN", "8607944139:AAE1dnqJf0TZrpmuS2sqlF2JZT_poNOB1U8")
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# РЕПОЗИТОРИЙ SIDEINSTALLER
+# Репозиторий SideInstaller
 REPO_OWNER = "FrizzleM"
 REPO_NAME = "SideInstaller"
 
@@ -56,7 +57,7 @@ async def start_cmd(message: types.Message):
         parse_mode="HTML"
     )
 
-# Раздел "Что это такое" (Стилизованный под единую свернутую цитату)
+# Раздел "Что это такое" (Свернутая цитата)
 @dp.callback_query(F.data == "info")
 async def info_callback(call: types.CallbackQuery):
     builder = InlineKeyboardBuilder()
@@ -151,8 +152,22 @@ async def home_callback(call: types.CallbackQuery):
         parse_mode="HTML"
     )
 
-# Запуск
+# Фейковый сервер для заглушки порта Render
+async def handle_ping(request):
+    return web.Response(text="Bot is running")
+
+# Точка входа
 async def main():
+    # Запуск заглушки порта для Render Web Service
+    app = web.Application()
+    app.router.add_get("/", handle_ping)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.getenv("PORT", 10000))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+
+    # Запуск Telegram бота
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
