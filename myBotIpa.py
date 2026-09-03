@@ -8,7 +8,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import URLInputFile
 
 # Токен из переменных окружения Render или напрямую
-TOKEN = os.getenv("TOKEN", "8607944139:AAE1dnqJf0TZrpmuS2sqlF2JZT_poNOB1U8")
+TOKEN = os.getenv("TOKEN", "а вот не ищи тут ничего")
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
